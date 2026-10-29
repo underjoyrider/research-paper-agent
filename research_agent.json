@@ -1,0 +1,248 @@
+{
+  "appName": "ScholarPulse - AI Research Paper Agent",
+  "version": "1.0.0",
+  "model": "gemini-3.8-flash",
+  "appConfiguration": {
+    "serverRuntime": "Node.js with Express & TypeScript (tsx)",
+    "devPort": 3000,
+    "geminiSdk": "@google/genai",
+    "searchGrounding": {
+      "enabled": true,
+      "toolConfig": {
+        "tools": [
+          {
+            "googleSearch": {}
+          }
+        ]
+      },
+      "extractGroundingMetadata": [
+        "groundingChunks",
+        "groundingSupports",
+        "webSearchQueries",
+        "searchEntryPoint"
+      ]
+    },
+    "retryPolicy": {
+      "maxRetries": 2,
+      "baseBackoffMs": 1500,
+      "retryOnStatuses": [503, 429, "UNAVAILABLE"]
+    },
+    "defaultCitationStyle": "APA 7th",
+    "security": {
+      "apiKeyHandling": "Server-side proxy routes only via process.env.GEMINI_API_KEY",
+      "clientExposures": "Zero API keys or secrets exposed to browser"
+    }
+  },
+  "researchWorkflow": [
+    {
+      "step": 1,
+      "name": "Query Formulation & Topic Decomposition",
+      "description": "Deconstructs the user-provided research topic into targeted Boolean queries and academic keyword permutations covering foundational theory, contemporary empirical benchmarks, and methodological paradigms."
+    },
+    {
+      "step": 2,
+      "name": "Live Literature Grounding via Google Search",
+      "description": "Executes real-time search grounding using Gemini 3.8 Flash to retrieve authoritative preprints (arXiv, bioRxiv), peer-reviewed publications (Nature, Science, IEEE, PubMed/NCBI), and institutional whitepapers."
+    },
+    {
+      "step": 3,
+      "name": "Evidence Synthesis & Comparative Benchmarking",
+      "description": "Synthesizes multi-corpus findings into rigorous scientific prose, formulating comparative Markdown benchmark tables contrasting throughput, accuracy, algorithmic complexity, and empirical limitations."
+    },
+    {
+      "step": 4,
+      "name": "Anti-Hallucination Citation Verification",
+      "description": "Extracts groundingChunks from API response metadata. Cross-references all in-text bracketed markers ([1], [2], etc.) against confirmed web URIs to prevent fabricated DOIs or fictitious authors."
+    },
+    {
+      "step": 5,
+      "name": "Publication-Grade Document Assembly & Section Indexing",
+      "description": "Structures the final manuscript into standardized academic sections (Abstract, Introduction, Methodology, Findings, Discussion, Conclusion, References) and indexes metadata for export to Markdown, Plain Text, BibTeX, and PDF."
+    }
+  ],
+  "inputFields": [
+    {
+      "name": "topic",
+      "type": "string",
+      "required": true,
+      "description": "The central scientific hypothesis, technological subject, or research inquiry to investigate."
+    },
+    {
+      "name": "field",
+      "type": "string",
+      "required": false,
+      "default": "Computer Science & AI",
+      "options": [
+        "Computer Science & AI",
+        "Biomedicine & Molecular Genetics",
+        "Materials Science & Energy",
+        "Quantum Physics & Mathematics",
+        "Environmental Engineering & Climate",
+        "Neuroscience & Cognitive Systems",
+        "Economics & Quantitative Policy",
+        "Interdisciplinary Sciences"
+      ]
+    },
+    {
+      "name": "depth",
+      "type": "enum",
+      "required": false,
+      "default": "graduate",
+      "options": [
+        {
+          "id": "phd_researcher",
+          "label": "PhD Researcher",
+          "description": "Maximal theoretical rigor, mathematical/mechanistic formulas, critique of literature."
+        },
+        {
+          "id": "graduate",
+          "label": "Graduate Level",
+          "description": "Deep analytical synthesis, empirical benchmarks, and robust citations."
+        },
+        {
+          "id": "undergraduate",
+          "label": "Undergraduate Honors",
+          "description": "Rigorous conceptual explanation, clear literature context, and structured analysis."
+        },
+        {
+          "id": "policy_brief",
+          "label": "Academic Policy Brief",
+          "description": "Empirically backed synthesis focusing on systemic trade-offs, governance, and actions."
+        }
+      ]
+    },
+    {
+      "name": "citationStyle",
+      "type": "enum",
+      "required": false,
+      "default": "APA 7th",
+      "options": ["APA 7th", "IEEE", "Chicago", "Harvard", "BibTeX"]
+    },
+    {
+      "name": "methodologyFocus",
+      "type": "string",
+      "required": false,
+      "default": "Systematic Literature Synthesis and Analytical Review",
+      "options": [
+        "Systematic Literature Synthesis and Analytical Review",
+        "Comparative Benchmarking and Meta-Analysis",
+        "Empirical Evidence Synthesis across Clinical / Lab Trials",
+        "Theoretical Framework and Mechanistic Modeling",
+        "Sociotechnical and Regulatory Policy Review"
+      ]
+    },
+    {
+      "name": "recencyFocus",
+      "type": "string",
+      "required": false,
+      "default": "Frontier Research (2024 - 2026)",
+      "options": [
+        "Frontier Research (2024 - 2026)",
+        "Contemporary Synthesis (2020 - 2026)",
+        "Comprehensive Landmark & Historic Corpus (All-Time)"
+      ]
+    },
+    {
+      "name": "specificQuestions",
+      "type": "array<string>",
+      "required": false,
+      "description": "Optional list of targeted sub-questions, hypotheses, or empirical benchmarks to specifically resolve."
+    }
+  ],
+  "outputSections": [
+    {
+      "sectionId": "title",
+      "markdownHeading": "# [Title of Research Paper]",
+      "description": "Precise, publication-grade academic title encapsulating the core scientific inquiry."
+    },
+    {
+      "sectionId": "metadata",
+      "markdownHeading": "## Metadata",
+      "description": "Document metadata including authors, scientific domain, academic depth, date, and 5-8 indexable keywords."
+    },
+    {
+      "sectionId": "abstract",
+      "markdownHeading": "## Abstract",
+      "wordCountRange": "250-350",
+      "description": "Comprehensive synthesis covering background, research question, methodological protocol, primary findings, and key contributions."
+    },
+    {
+      "sectionId": "introduction",
+      "markdownHeading": "## 1. Introduction & Theoretical Foundations",
+      "subsections": [
+        "1.1 Problem Statement and Context",
+        "1.2 Review of Foundational Theories and State-of-the-Art",
+        "1.3 Investigative Objectives and Scope"
+      ]
+    },
+    {
+      "sectionId": "methodology",
+      "markdownHeading": "## 2. Methodology & Analytical Framework",
+      "subsections": [
+        "2.1 Research Synthesis Protocol and Corpus Selection",
+        "2.2 Analytical Methodology",
+        "2.3 Evaluation Criteria, Limitations of Corpus, and Bias Mitigation"
+      ]
+    },
+    {
+      "sectionId": "findings",
+      "markdownHeading": "## 3. Key Findings & Thematic Synthesis",
+      "requirements": "Granular empirical analysis containing at least one comparative Markdown benchmark table evaluating competing frameworks.",
+      "subsections": [
+        "3.1 Primary Mechanism / Core Analytical Findings",
+        "3.2 Quantitative Benchmarks and Empirical Evidence",
+        "3.3 Comparative Analysis across Frameworks"
+      ]
+    },
+    {
+      "sectionId": "discussion",
+      "markdownHeading": "## 4. Critical Discussion & Limitations",
+      "subsections": [
+        "4.1 Theoretical and Practical Interpretations",
+        "4.2 Known Methodological Limitations and Conflicting Evidence",
+        "4.3 Ethical, Regulatory, and Implementation Considerations"
+      ]
+    },
+    {
+      "sectionId": "conclusion",
+      "markdownHeading": "## 5. Conclusion & Future Research Directions",
+      "subsections": [
+        "5.1 Definitive Summary of Evidence",
+        "5.2 Five-Year Research Roadmap and Open Scientific Challenges"
+      ]
+    },
+    {
+      "sectionId": "references",
+      "markdownHeading": "## References",
+      "description": "Numbered list ([1], [2], [3]...) strictly mapped to verified Google Search grounding citations with author, year, title, publication, and URL."
+    }
+  ],
+  "citationVerificationRules": [
+    {
+      "ruleId": "CVR-01",
+      "name": "Zero Citation Hallucination",
+      "description": "The agent is strictly prohibited from fabricating, hallucinating, or guessing citation titles, authors, DOIs, journal names, or web addresses."
+    },
+    {
+      "ruleId": "CVR-02",
+      "name": "Grounding Source Provenance",
+      "description": "Every cited work in the References section must correspond to a verified web source retrieved via Google Search grounding metadata (groundingChunks)."
+    },
+    {
+      "ruleId": "CVR-03",
+      "name": "Strict In-Text Mapping",
+      "description": "In-text citation markers ([1], [2], etc.) must maintain a 1:1 bidirectional alignment with the numbered References list."
+    },
+    {
+      "ruleId": "CVR-04",
+      "name": "Objective Conflict Reporting",
+      "description": "Where scientific literature exhibits divergent benchmarks or conflicting findings, both perspectives must be documented in the Discussion section with their respective verified references."
+    },
+    {
+      "ruleId": "CVR-05",
+      "name": "Format Adherence",
+      "description": "References must be formatted in accordance with the user's requested standard (APA 7th, IEEE, Chicago, Harvard, or BibTeX) and must include direct source URLs."
+    }
+  ],
+  "exportFormats": ["Markdown (.md)", "Plain Text (.txt)", "BibTeX (.bib)", "Print / PDF"]
+}
